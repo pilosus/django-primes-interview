@@ -12,4 +12,7 @@ urlpatterns = [
 
     # process new datasets; see results of processing
     url(r'^process$', views.process, name='process'),
+
+    # see results of processing
+    url(r'^report$', views.report, name='report'),
 ]

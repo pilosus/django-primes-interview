@@ -39,9 +39,10 @@
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li {% if page == 'home' %}class="active"{% endif %}><a href="/datasets/">Home</a></li>
-            <li {% if page == 'submit' %}class="active"{% endif %}><a href="/datasets/submit">Submit</a></li>
-            <li {% if page == 'process' %}class="active"{% endif %}><a href="/datasets/process">Process</a></li>
+            <li {% if page_alias == 'home' %}class="active"{% endif %}><a href="/datasets/">Home</a></li>
+            <li {% if page_alias == 'submit' %}class="active"{% endif %}><a href="/datasets/submit">Submit</a></li>
+            <li {% if page_alias == 'process' %}class="active"{% endif %}><a href="/datasets/process">Process</a></li>
+            <li {% if page_alias == 'report' %}class="active"{% endif %}><a href="/datasets/report">Report</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>

@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.contrib import messages
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Dataset
 from .forms import UploadFileForm
@@ -13,7 +14,7 @@ def index(request):
     :param request: Request
     :return: HttpResponse
     """
-    context = {'page': 'home'}
+    context = {'page_alias': 'home'}
     return render(request, 'datasets/index.html', context)
 
 
@@ -42,10 +43,39 @@ def submit(request):
     else:
         form = UploadFileForm()
 
-    context = {'page': 'submit', 'form': form}
+    context = {'page_alias': 'submit', 'form': form}
     return render(request, 'datasets/submit.html', context)
 
 
 def process(request):
-    context = {'page': 'process'}
+    """
+
+    :param request:
+    :return:
+    """
+    if request.method == 'POST':
+        # TODO: process data here
+        messages.info(request, 'Datasets processing has started.')
+        return redirect(reverse('datasets:process'))
+
+    unprocessed_datasets = Dataset.objects.filter(checked__isnull=True)
+    paginator = Paginator(unprocessed_datasets, 25)
+
+    page = request.GET.get('page')
+    print(page)
+    try:
+        datasets = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        datasets = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        datasets = paginator.page(paginator.num_pages)
+
+    context = {'page_alias': 'process', 'datasets': datasets}
     return render(request, 'datasets/process.html', context)
+
+
+def report(request):
+    context = {'page_alias': 'report'}
+    return render(request, 'datasets/report.html', context)

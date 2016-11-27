@@ -1,3 +1,45 @@
 {% extends 'datasets/base.html' %}
+{% load datasets_extras %}
 
 {% block title%}Processing {{ block.super }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>Process New Datasets</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        {% show_pagination datasets %}
+
+        <ol>
+            {% for dataset in datasets %}
+            <li><code>{{ dataset.upload|cut:"uploads/"}}</code> ({{ dataset.added|date:"r"}})</li>
+            {% empty %}
+            <li>No submissions yet.</li>
+            {% endfor %}
+        </ol>
+
+
+    </div>
+
+    <div class="col-md-4">
+
+        {% if datasets %}
+        <form action="{% url 'datasets:process' %}" method="post">
+            <div class="form-group">
+                {% csrf_token %}
+            </div>
+            <button type="submit" class="btn btn-lg btn-success">
+                Start Processing {{ datasets.paginator.count }} dataset{{ datasets.paginator.count|pluralize }}
+            </button>
+        </form>
+
+        {% endif %}
+    </div>
+</div>
+
+
+
+{% endblock %}
