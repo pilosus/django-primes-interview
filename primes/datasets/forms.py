@@ -1,6 +1,7 @@
 from django import forms
 
-class Upload(forms.Form):
+
+class UploadFileForm(forms.Form):
     """
     Render a form for json-file upload.
     """

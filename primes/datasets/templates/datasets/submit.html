@@ -1,3 +1,32 @@
 {% extends 'datasets/base.html' %}
 
 {% block title%}Submit File {{ block.super }}{% endblock %}
+
+{% block content %}
+
+<h1>Upload File</h1>
+
+<form action="{% url 'datasets:submit' %}" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        {% csrf_token %}
+    </div>
+
+    <div class="form-group {% if form.upload.errors %}has-error{% endif %}">
+          {{ form.upload.label_tag }}
+          {{ form.upload }}
+
+          {% if form.upload.errors %}
+            <p class="help-block">{{ form.upload.errors }}</p>
+          {% endif %}
+
+          {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                <p class="help-block">{{ error }}</p>
+            {% endfor %}
+          {% endif %}
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+{% endblock %}

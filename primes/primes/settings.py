@@ -129,4 +129,4 @@ STATIC_URL = '/static/'
 
 # Uploads
 # http://stackoverflow.com/a/34430349/4241180
-MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
