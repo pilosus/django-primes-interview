@@ -8,12 +8,15 @@ def index(request):
     :param request: Request
     :return: HttpResponse
     """
-    return render(request, 'datasets/index.html')
+    context = {'page': 'home'}
+    return render(request, 'datasets/index.html', context)
 
 
 def submit(request):
-    return render(request, 'datasets/submit.html')
+    context = {'page': 'submit'}
+    return render(request, 'datasets/submit.html', context)
 
 
 def process(request):
-    return render(request, 'datasets/process.html')
+    context = {'page': 'process'}
+    return render(request, 'datasets/process.html', context)
