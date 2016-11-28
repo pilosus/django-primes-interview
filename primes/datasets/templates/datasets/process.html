@@ -17,7 +17,7 @@
             {% for dataset in datasets %}
             <li><code>{{ dataset.name }}</code> ({{ dataset.added|date:"r"}})</li>
             {% empty %}
-            <li>No submissions yet.</li>
+            <p>No submissions yet.</p>
             {% endfor %}
         </ol>
 

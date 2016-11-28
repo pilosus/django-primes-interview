@@ -7,7 +7,10 @@ class Processing(models.Model):
     A model for a processing of the submitted datasets.
     """
     exceptions = models.NullBooleanField(default=None)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "{pk} {timestamp}".format(pk=self.pk, timestamp=self.last_modified)
 
 
 class Dataset(models.Model):
@@ -17,7 +20,7 @@ class Dataset(models.Model):
     `data` and `result` fields is PostgreSQL only.
     They require Django >= 1.9, PostgreSQL >= 9.4, Psycopg2 >= 2.5.4.
     """
-    processing = models.ForeignKey(Processing, null=True, default=None)
+    processing = models.ForeignKey(Processing, null=True, default=None, on_delete=models.CASCADE)
     name = models.CharField(default='', max_length=255)
     data = fields.JSONField(null=True, default=None)
     result = fields.JSONField(null=True, default=None)
@@ -25,6 +28,6 @@ class Dataset(models.Model):
     added = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "{name} {timestamp}".format(name=self.name, timestamp=self.added)
-
-
+        return "{name} of check {processing} {timestamp}".\
+            format(name=self.name, processing=self.processing.pk,
+                   timestamp=self.added)

@@ -7,8 +7,9 @@ from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
 
-from .models import Dataset
+from .models import Dataset, Processing
 from .forms import UploadFileForm
+from .handlers import process_datasets
 
 
 def index(request):
@@ -40,6 +41,7 @@ def submit(request):
             exception_message = ''
             # json parsing; if fails, save exceptions
             try:
+                # TODO: using .chunks() for large input instead?
                 fl = upload.read()
                 data = json.loads(fl.decode('utf-8'))
                 dataset.data = data
@@ -73,16 +75,17 @@ def process(request):
     :param request: Request
     :return: HttpResponse
     """
-    if request.method == 'POST':
-        # TODO: process data here
-        messages.info(request, 'Datasets processing has started.')
-        return redirect(reverse('datasets:process'))
-
     unprocessed_datasets = Dataset.objects.filter(processing__isnull=True)
-    paginator = Paginator(unprocessed_datasets, 25)
 
+    if request.method == 'POST':
+        # process data here
+        messages.info(request, 'Datasets processing has started.')
+        process_datasets(unprocessed_datasets)
+        return redirect(reverse('datasets:report'))
+
+    paginator = Paginator(unprocessed_datasets, 25)
     page = request.GET.get('page')
-    print(page)
+
     try:
         datasets = paginator.page(page)
     except PageNotAnInteger:
@@ -97,7 +100,8 @@ def process(request):
 
 
 def report(request):
-    processed_datasets = Dataset.objects.exclude(processing__isnull=True)
+    processed_datasets = Dataset.objects.exclude(processing__isnull=True).\
+                             order_by('-processing__pk', '-processing__last_modified')
     paginator = Paginator(processed_datasets, 25)
 
     page = request.GET.get('page')
@@ -111,5 +115,11 @@ def report(request):
         # If page is out of range (e.g. 9999), deliver last page of results.
         datasets = paginator.page(paginator.num_pages)
 
-    context = {'page_alias': 'report', 'datasets': datasets}
+    try:
+        last_check = processed_datasets[0].processing
+    except IndexError:
+        last_check = None
+
+    context = {'page_alias': 'report', 'datasets': datasets, 'last_check': last_check}
+
     return render(request, 'datasets/report.html', context)

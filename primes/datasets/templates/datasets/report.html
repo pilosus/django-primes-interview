@@ -17,7 +17,7 @@
         <div class="table-responsive">
             <table class="table table-condensed">
                 <thead>
-                    <th>Processing #</th>
+                    <th>Check</th>
                     <th>File</th>
                     <th>Result</th>
                     <th>Exception</th>
@@ -26,12 +26,12 @@
 
                 <tbody>
                    {% for dataset in datasets %}
-                    <tr {% if not dataset.result %}class="warning"{% endif %}>
+                    <tr {% if dataset.exception %}class="danger"{% endif %}>
                         <td>{{ dataset.processing.pk }}</td>
                         <td>{{ dataset.name }}</td>
                         <td>{{ dataset.result }}</td>
                         <td>{{ dataset.exception }}</td>
-                        <td>{{ dataset.processing.timestamp|date:"c"}}</td>
+                        <td>{{ dataset.processing.last_modified|date:"r"}}</td>
                     </tr>
                     {% empty %}
                     <tr><td colspan="4">No completed tasks yet.</td></tr>
@@ -43,12 +43,15 @@
     <div class="col-md-2">
         <h3>Last Check</h3>
 
-        {% if exceptions %}
-        <p class="bg-danger">Exception occurred</p>
-        {% else %}
-        <p class="bg-success">No exceptions</p>
+        {% if last_check %}
+        <p> Check #:
+            <strong>{{ last_check.id }}</strong><br>
+            Exceptions Status:
+            <strong>{% if last_check.exceptions is True %}True{% else %}False{% endif %}</strong><br>
+            Timestamp:
+            <strong>{{ last_check.last_modified|date:"d/m/Y H:i:s T"}}</strong>
+        </p>
         {% endif %}
-
     </div>
 </div>
 {% endblock %}
