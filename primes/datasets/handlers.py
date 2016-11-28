@@ -2,6 +2,8 @@ import re
 from django.utils import timezone
 
 
+# Model's helper functions #
+
 def handle_uploaded_file(instance, filename):
     """
     Return a path to a file under MEDIA_ROOT directory.
@@ -12,3 +14,6 @@ def handle_uploaded_file(instance, filename):
     """
     timestamp = re.sub(r'\.|:| |e|\+', '-', str(timezone.now()))
     return "uploads/{0}.json".format(timestamp)
+
+
+

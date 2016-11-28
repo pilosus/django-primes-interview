@@ -1,8 +1,11 @@
+import json
+
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.contrib import messages
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.utils import timezone
 
 from .models import Dataset
 from .forms import UploadFileForm
@@ -30,12 +33,29 @@ def submit(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            # save file on a model
-            dataset = Dataset(upload=request.FILES['upload'])
+            # receive upload; record it's name
+            upload = request.FILES['upload']
+            dataset = Dataset(name=upload.name)
+
+            exception_message = ''
+            # json parsing; if fails, save exceptions
+            try:
+                fl = upload.read()
+                data = json.loads(fl.decode('utf-8'))
+                dataset.data = data
+            except Exception as err:
+                exception_message = "{type}: {message}".\
+                    format(type=type(err).__name__, message=err)
+                dataset.exception = exception_message
+
+            # save data on a model
             dataset.save()
 
             # set flash message
-            messages.info(request, 'Your file has been submitted.')
+            if exception_message:
+                messages.warning(request, 'An exception occurred on file submission.')
+            else:
+                messages.info(request, 'Your file has been submitted.')
 
             # POST -> Redirect -> GET
             return redirect(reverse('datasets:process'))
@@ -50,15 +70,15 @@ def submit(request):
 def process(request):
     """
 
-    :param request:
-    :return:
+    :param request: Request
+    :return: HttpResponse
     """
     if request.method == 'POST':
         # TODO: process data here
         messages.info(request, 'Datasets processing has started.')
         return redirect(reverse('datasets:process'))
 
-    unprocessed_datasets = Dataset.objects.filter(checked__isnull=True)
+    unprocessed_datasets = Dataset.objects.filter(processing__isnull=True)
     paginator = Paginator(unprocessed_datasets, 25)
 
     page = request.GET.get('page')
@@ -77,5 +97,19 @@ def process(request):
 
 
 def report(request):
-    context = {'page_alias': 'report'}
+    processed_datasets = Dataset.objects.exclude(processing__isnull=True)
+    paginator = Paginator(processed_datasets, 25)
+
+    page = request.GET.get('page')
+    print(page)
+    try:
+        datasets = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        datasets = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        datasets = paginator.page(paginator.num_pages)
+
+    context = {'page_alias': 'report', 'datasets': datasets}
     return render(request, 'datasets/report.html', context)

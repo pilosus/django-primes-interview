@@ -4,4 +4,51 @@
 {% block title%}Report {{ block.super }}{% endblock %}
 
 {% block content %}
+
+<div class="page-header">
+    <h1>Processing Report</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-10">
+        {% show_pagination datasets %}
+
+
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <thead>
+                    <th>Processing #</th>
+                    <th>File</th>
+                    <th>Result</th>
+                    <th>Exception</th>
+                    <th>Checked</th>
+                </thead>
+
+                <tbody>
+                   {% for dataset in datasets %}
+                    <tr {% if not dataset.result %}class="warning"{% endif %}>
+                        <td>{{ dataset.processing.pk }}</td>
+                        <td>{{ dataset.name }}</td>
+                        <td>{{ dataset.result }}</td>
+                        <td>{{ dataset.exception }}</td>
+                        <td>{{ dataset.processing.timestamp|date:"c"}}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">No completed tasks yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <h3>Last Check</h3>
+
+        {% if exceptions %}
+        <p class="bg-danger">Exception occurred</p>
+        {% else %}
+        <p class="bg-success">No exceptions</p>
+        {% endif %}
+
+    </div>
+</div>
 {% endblock %}

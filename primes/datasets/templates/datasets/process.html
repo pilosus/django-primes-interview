@@ -15,7 +15,7 @@
 
         <ol>
             {% for dataset in datasets %}
-            <li><code>{{ dataset.upload|cut:"uploads/"}}</code> ({{ dataset.added|date:"r"}})</li>
+            <li><code>{{ dataset.name }}</code> ({{ dataset.added|date:"r"}})</li>
             {% empty %}
             <li>No submissions yet.</li>
             {% endfor %}
