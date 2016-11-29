@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from .models import Dataset, Processing
 from .forms import UploadFileForm
-from .handlers import process_datasets
+from .tasks import process_datasets
 
 
 def index(request):

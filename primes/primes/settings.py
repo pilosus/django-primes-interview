@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+import re
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,7 +21,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'mh@bxilm%)0&6q3sc9&2%sj$_a6-yzht=y^-8cr6lqdqu7bumz'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'mh@bxilm%)0&6q3sc9&2%sj$_a6-yzht=y^-8cr6lqdqu7bumz')
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -130,3 +132,22 @@ STATIC_URL = '/static/'
 # Uploads
 # http://stackoverflow.com/a/34430349/4241180
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
+
+# Celery
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', '')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', '')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
+CELERY_TASK_ROUTES = {
+        #'datasets.tasks.first_select_json_from_dataset':
+        re.compile(r'.*first_.*'):
+            {'queue': os.environ.get('CELERY_QUEUE_FIRST', '')},
+
+        re.compile(r'.*second_.*'):
+            {'queue': os.environ.get('CELERY_QUEUE_SECOND', '')},
+
+        re.compile(r'.*third_.*'):
+            {'queue': os.environ.get('CELERY_QUEUE_THIRD', '')},
+}
