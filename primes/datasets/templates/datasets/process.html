@@ -31,11 +31,15 @@
             <div class="form-group">
                 {% csrf_token %}
             </div>
-            <button type="submit" class="btn btn-lg btn-success">
+            <button type="submit" class="btn btn-lg btn-success btn-block">
                 Start Processing {{ datasets.paginator.count }} dataset{{ datasets.paginator.count|pluralize }}
             </button>
         </form>
 
+
+        <a class="btn btn-lg btn-primary btn-block" href="{% url 'datasets:submit' %}" role="button">
+            Submit More Datasets
+        </a>
         {% endif %}
     </div>
 </div>

@@ -31,7 +31,7 @@
                         <td>{{ dataset.name }}</td>
                         <td>{{ dataset.result }}</td>
                         <td>{{ dataset.exception }}</td>
-                        <td>{{ dataset.processing.last_modified|date:"r"}}</td>
+                        <td>{{ dataset.processing.last_modified|date:"c"}}</td>
                     </tr>
                     {% empty %}
                     <tr><td colspan="4">No completed tasks yet.</td></tr>

@@ -55,7 +55,8 @@ def submit(request):
 
             # set flash message
             if exception_message:
-                messages.warning(request, 'An exception occurred on file submission.')
+                messages.warning(request, 'An exception occurred on file submission. '
+                                          'But you still can run processing to get details.')
             else:
                 messages.info(request, 'Your file has been submitted.')
 
@@ -79,7 +80,8 @@ def process(request):
 
     if request.method == 'POST':
         # process data here
-        messages.info(request, 'Datasets processing has started.')
+        messages.info(request, 'Datasets processing has started. '
+                               'Refresh the page in a few moments.')
         process_datasets(unprocessed_datasets)
         return redirect(reverse('datasets:report'))
 
@@ -105,7 +107,6 @@ def report(request):
     paginator = Paginator(processed_datasets, 25)
 
     page = request.GET.get('page')
-    print(page)
     try:
         datasets = paginator.page(page)
     except PageNotAnInteger:

@@ -137,8 +137,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 # Celery
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', '')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', '')
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
+#CELERY_ACCEPT_CONTENT = ['json']
+
+# Using the pickle encoding will gain you the support of all built-in Python data types (except class instances)
+# See also: http://docs.celeryproject.org/en/latest/userguide/calling.html#serializers
+CELERY_TASK_SERIALIZER = 'pickle'
 
 CELERY_TASK_ROUTES = {
         #'datasets.tasks.first_select_json_from_dataset':

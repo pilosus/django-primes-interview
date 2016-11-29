@@ -28,6 +28,4 @@ class Dataset(models.Model):
     added = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "{name} of check {processing} {timestamp}".\
-            format(name=self.name, processing=self.processing.pk,
-                   timestamp=self.added)
+        return "{name} {timestamp}".format(name=self.name, timestamp=self.added)

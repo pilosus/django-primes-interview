@@ -1,6 +1,7 @@
 from celery import shared_task, chain
+from primes import celery_app
 
-from .models import Processing
+from .models import Processing, Dataset
 from .exceptions import DatasetInputError
 
 # Test function chain #
@@ -11,39 +12,80 @@ def process_datasets(query_set):
     :return: None
     """
 
-    # create Processing object
+    # create Processing object in order to assign dataset to it
     processing = Processing.objects.create()
 
     for dataset in query_set:
         # TODO: Celery chain: chain(first(), second(), third())
 
-        chain_result = chain(first_select_json_from_dataset.s(dataset, processing),
+        chain_result = chain(first_select_json_from_dataset.s((dataset.pk, processing.pk)),
                              second_test_function.s(),
                              third_save_json_to_db.s())()
+
         """
+        # TODO: the following example of chaining works well
+        chain_result = chain(first_two_vals.s(1, 3), second_two_vals.s(), third_two_vals.s())()
+        print('=' * 30, chain_result.get(), '=' * 30)
+        """
+
+        """
+        # TODO: the following non-celery version works well
         try:
             # step 1
-            select_dataset, select_processing = first_select_json_from_dataset(dataset, processing)
+            dataset_and_processing_pks = first_select_json_from_dataset((dataset.pk, processing.pk))
         except DatasetInputError:
             continue
 
         # step 2
-        test_dataset, test_result = second_test_function(select_dataset, select_processing)
+        dataset_pk_and_json = second_test_function(dataset_and_processing_pks)
 
         # step 3
-        result = third_save_json_to_db(test_dataset, test_result)
+        result = third_save_json_to_db(dataset_pk_and_json)
         """
 
 
+
+# TODO: These are tasks for testing celery only! REMOVE AFTER TESTING
+@celery_app.task
+def first_two_vals(a, b):
+    return a, b
+
+@celery_app.task
+def second_two_vals(c):
+    a, b = c
+    return a, b
+
+@celery_app.task
+def third_two_vals(c):
+    a, b = c
+    return b, a
+
+
+# main tasks
+
+# Since Celery is a distributed system, you can't know in which process,
+# or even on what machine the task will run. So you shouldn't pass
+# Django model objects as arguments to tasks, its almost always better to
+# re-fetch the object from the database instead, as there are possible
+# race conditions involved.
+
 @shared_task
-def first_select_json_from_dataset(dataset, processing):
+def first_select_json_from_dataset(dataset_and_processing_pks):
     """
     Pass a JSON from Dataset model for a given dataset to a test function.
 
-    :param: processing: Processing instance
-    :param dataset: Dataset instance
-    :return: Dataset instance; Processing instance
+    :param dataset_and_processing_pks: tuple of two (Dataset PK, Processing PK)
+    :return: tuple of two (Dataset PK; Processing PK)
     """
+    # unpack tuple; needed for Celery chain compatibility
+    dataset_pk, processing_pk = dataset_and_processing_pks
+
+    # re-fetch Dataset and Processing from DB
+    dataset = Dataset.objects.get(pk=dataset_pk)
+    processing = Processing.objects.get(pk=processing_pk)
+
+
+
     # mark dataset belonging to the given Processing item
     dataset.processing = processing
 
@@ -58,21 +100,25 @@ def first_select_json_from_dataset(dataset, processing):
         processing.save()
         raise DatasetInputError('Submitted dataset has got an exception')
 
-    return dataset, processing
+    return dataset.pk, processing.pk
 
 
 @shared_task
-def second_test_function(dataset, processing):
+def second_test_function(dataset_and_processing_pks):
     """
     Pass a result of JSON processing to a function that saves result on a model.
 
-    :param dataset: Dataset instance
-    :param processing: Processing instance
-    :return: Dataset instance; JSON (Python's list of dicts)
+    :param dataset_and_processing_pks: tuple of two (Dataset PK, Processing PK)
+    :return: tuple of two (Dataset PK; JSON (Python's list of dicts))
     """
+    # unpack tuple; needed for Celery chain compatibility
+    dataset_pk, processing_pk = dataset_and_processing_pks
+
+    # re-fetch Dataset and Processing
+    dataset = Dataset.objects.get(pk=dataset_pk)
+    processing = Processing.objects.get(pk=processing_pk)
 
     result = []
-
     # calculate result; handle exceptions
     try:
         result = [{'result': pair['a'] + pair['b']} for pair in dataset.data]
@@ -87,20 +133,24 @@ def second_test_function(dataset, processing):
     dataset.save()
     processing.save()
 
-    return dataset, result
+    return dataset_pk, result
 
 
 @shared_task
-def third_save_json_to_db(dataset, json_data):
+def third_save_json_to_db(dataset_pk_and_json):
     """
     Save input JSON on a model.
 
-    It's a 3rd unction in the chain.
-
-    :param dataset: Dataset instance
-    :param json_data: JSON (Python's list of dicts)
+    :param dataset_pk_and_json: tuple of two (Dataset PK, JSON (Python's list of dicts))
     :return: boolean: True if data saved to the data base, False otherwise
     """
+    # unpack tuple; needed for Celery chain compatibility
+    dataset_pk, json_data = dataset_pk_and_json
+
+    # re-fetch Dataset and Processing
+    dataset = Dataset.objects.get(pk=dataset_pk)
+
+    # save results to the DB
     dataset.result = json_data
     dataset.save()
 
