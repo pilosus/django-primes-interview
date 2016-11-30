@@ -23,7 +23,7 @@
         <img src="https://pilosus.org/pics/django-primes-interview.gif"
                 class="img-responsive" alt="Solution Screencast" title="Solution Screencast">
 
-        <h3>Testing Environment</h3>
+        <h3>Up & Running Locally</h3>
 
         <p>Under Django project's directory (where <code>manage.py</code> is located) do the following:</p>
         <p>1. Create a file with environment variables, e.g. <code>.env</code>, for project's settings:</p>
@@ -54,7 +54,13 @@ FLOWER_PORT=5555
         <p>2. Install <code>requirements.txt</code> (globally, or better off in the <code>virtualenv</code>):</p>
 
         <pre>
-$ pip install -r ../requirements.txt
+# choose either of the following depending on your environment
+
+# production
+$ pip install -r ../requirements/prod.txt
+
+# development & testing
+$ pip install -r ../requirements/testing.txt
         </pre>
 
         <p>3. Before executing each of the following steps (in separate shells), export above mentioned variables
@@ -67,7 +73,7 @@ $ set +a
 $ source .venv/bin/activate
         </pre>
 
-        <p>4. Run three Celery workers:</p>
+        <p>4. Run three <code>Celery</code> workers:</p>
 
         <pre>
 $ celery -A primes worker -Q first -l info --hostname=first-server@%h
@@ -75,13 +81,13 @@ $ celery -A primes worker -Q second -l info --hostname=second-server@%h
 $ celery -A primes worker -Q third -l info --hostname=third-server@%h
         </pre>
 
-        <p>5. Run Flower:</p>
+        <p>5. Run <code>Flower</code>:</p>
 
         <pre>
 $ flower -A primes --port=5555
         </pre>
 
-        <p>6. Run Django server:</p>
+        <p>6. Run <code>Django</code> server:</p>
 
         <pre>
 $ python manage.py runserver

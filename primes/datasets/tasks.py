@@ -46,8 +46,6 @@ def first_select_json_from_dataset(dataset_and_processing_pks):
     dataset = Dataset.objects.get(pk=dataset_pk)
     processing = Processing.objects.get(pk=processing_pk)
 
-
-
     # mark dataset belonging to the given Processing item
     dataset.processing = processing
 

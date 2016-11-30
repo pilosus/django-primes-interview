@@ -86,6 +86,14 @@ DATABASES = {
         'PASSWORD': os.environ.get('DATABASE_PASSWORD', ''),
         'HOST': os.environ.get('DATABASE_HOST', ''),
         'PORT': os.environ.get('DATABASE_PORT', ''),
+        'TEST': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.environ.get('DATABASE_TESTING_NAME', ''),
+            'USER': os.environ.get('DATABASE_TESTING_USER', ''),
+            'PASSWORD': os.environ.get('DATABASE_TESTING_PASSWORD', ''),
+            'HOST': os.environ.get('DATABASE_TESTING_HOST', ''),
+            'PORT': os.environ.get('DATABASE_TESTING_PORT', ''),
+        }
     }
 }
 

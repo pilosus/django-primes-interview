@@ -4,8 +4,9 @@ uploads/
 ### TODO ###
 TODO*
 
-### Emacs temp files ###
+### Temp files ###
 *~
+.DS_Store
 
 ### VirtualEnv template
 # Virtualenv
@@ -145,6 +146,7 @@ celerybeat-schedule
 
 # dotenv
 .env
+.env*
 
 # virtualenv
 venv/

@@ -15,7 +15,7 @@
 
 
         <div class="table-responsive">
-            <table class="table table-condensed">
+            <table id="id_list_table" class="table table-condensed">
                 <thead>
                     <th>Check</th>
                     <th>File</th>
@@ -45,9 +45,9 @@
 
         {% if last_check %}
         <p> Check #:
-            <strong>{{ last_check.id }}</strong><br>
+            <strong id="id_last_check_num">{{ last_check.id }}</strong><br>
             Exceptions Status:
-            <strong>{% if last_check.exceptions is True %}True{% else %}False{% endif %}</strong><br>
+            <strong id="id_last_check_status">{% if last_check.exceptions is True %}True{% else %}False{% endif %}</strong><br>
             Timestamp:
             <strong>{{ last_check.last_modified|date:"d/m/Y H:i:s T"}}</strong>
         </p>
