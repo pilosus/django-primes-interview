@@ -100,7 +100,10 @@ $ python manage.py runserver
         <p>The app covered with functional tests (using <code>Selenium</code>), as well as with unit-tests.</p>
 
         <pre>
-# Unit-tests
+# Unit-tests without coverage
+$ python manage.py test datasets
+
+# Unit-tests with coverage
 # NB! Install dependencies with pip install -r requirements/testing.txt beforehand!
 $ ./run-tests-with-coverage.sh datasets
 

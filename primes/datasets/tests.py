@@ -67,6 +67,18 @@ class ProcessingAndDatasetModelsTest(TestCase):
         self.assertEqual(saved_dataset.data, data)
         self.assertEqual(saved_dataset.result, {'result': 0})
 
+    def test_dataset_str_representation(self):
+        dataset = Dataset.objects.create()
+        dataset.name = 'my_file.json'
+        dataset.save()
+
+        self.assertEqual(str(dataset), 'my_file.json {0}'.format(dataset.added))
+
+    def test_processing_str_representation(self):
+        processing = Processing.objects.create()
+
+        self.assertEqual(str(processing), '{0} {1}'.format(processing.pk,
+                         processing.last_modified))
 
 class IndexPageTest(TestCase):
     """
@@ -120,6 +132,17 @@ class SubmitPageTest(TestCase):
         response = self.client.get(reverse("datasets:submit"))
         self.assertEqual(response.context['page_alias'], 'submit')
 
+    def test_submit_page_handles_exceptions_on_POST_request(self):
+        test_files_dir = os.path.join(settings.MEDIA_ROOT, 'tests')
+        second_illegal_file = os.path.join(test_files_dir, 'dataset2falsy.json')
+
+        # see https://docs.djangoproject.com/en/1.8/topics/testing/tools/#django.test.Client.post
+        with open(second_illegal_file) as fp:
+            response = self.client.post(reverse('datasets:submit'), data={'upload': fp})
+
+        dataset = Dataset.objects.first()
+        self.assertIn('JSONDecodeError', dataset.exception)
+
 
 class ProcessPageTest(TestCase):
     """
@@ -167,6 +190,10 @@ class ProcessPageTest(TestCase):
         response = self.client.get(reverse("datasets:process"), data={'page': 2})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['datasets']), 5)
+
+    def test_process_page_pagination_without_datasets(self):
+        response = self.client.get(reverse("datasets:process"), data={'page': 1})
+        self.assertEqual(len(response.context['datasets']), 0)
 
     def test_process_page_has_page_alias_in_context(self):
         response = self.client.get(reverse("datasets:process"))
