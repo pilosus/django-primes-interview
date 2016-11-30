@@ -16,50 +16,12 @@ def process_datasets(query_set):
     processing = Processing.objects.create()
 
     for dataset in query_set:
-        # TODO: Celery chain: chain(first(), second(), third())
-
+        # Chaining three tasks with Celery chain
         chain_result = chain(first_select_json_from_dataset.s((dataset.pk, processing.pk)),
                              second_test_function.s(),
-                             third_save_json_to_db.s())()
+                             third_save_json_to_db.s()).apply_async()
 
-        """
-        # TODO: the following example of chaining works well
-        chain_result = chain(first_two_vals.s(1, 3), second_two_vals.s(), third_two_vals.s())()
-        print('=' * 30, chain_result.get(), '=' * 30)
-        """
-
-        """
-        # TODO: the following non-celery version works well
-        try:
-            # step 1
-            dataset_and_processing_pks = first_select_json_from_dataset((dataset.pk, processing.pk))
-        except DatasetInputError:
-            continue
-
-        # step 2
-        dataset_pk_and_json = second_test_function(dataset_and_processing_pks)
-
-        # step 3
-        result = third_save_json_to_db(dataset_pk_and_json)
-        """
-
-
-
-# TODO: These are tasks for testing celery only! REMOVE AFTER TESTING
-@celery_app.task
-def first_two_vals(a, b):
-    return a, b
-
-@celery_app.task
-def second_two_vals(c):
-    a, b = c
-    return a, b
-
-@celery_app.task
-def third_two_vals(c):
-    a, b = c
-    return b, a
-
+    return processing.pk
 
 # main tasks
 

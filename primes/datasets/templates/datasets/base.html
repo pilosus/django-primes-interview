@@ -1,4 +1,5 @@
 {% load static %}
+{% load datasets_extras %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -43,6 +44,7 @@
             <li {% if page_alias == 'submit' %}class="active"{% endif %}><a href="/datasets/submit">Submit </a></li>
             <li {% if page_alias == 'process' %}class="active"{% endif %}><a href="/datasets/process">Process</a></li>
             <li {% if page_alias == 'report' %}class="active"{% endif %}><a href="/datasets/report">Report</a></li>
+            <li><a href="{% if request.is_secure %}https{% else %}http{% endif %}://{{ request.get_host | replace_flower_port }}">Flower</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>

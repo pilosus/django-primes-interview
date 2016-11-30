@@ -80,9 +80,11 @@ def process(request):
 
     if request.method == 'POST':
         # process data here
-        messages.info(request, 'Datasets processing has started. '
-                               'Refresh the page in a few moments.')
-        process_datasets(unprocessed_datasets)
+        check_number = process_datasets(unprocessed_datasets)
+        messages.info(request, "Datasets processing #{0} has started. "
+                               "Please refresh the page in a few moments.".
+                      format(check_number))
+
         return redirect(reverse('datasets:report'))
 
     paginator = Paginator(unprocessed_datasets, 25)

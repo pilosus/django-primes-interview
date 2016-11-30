@@ -1,3 +1,101 @@
 {% extends 'datasets/base.html' %}
+{% load datasets_extras %}
 
 {% block title%}Index {{ block.super }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>Django Primes Test Function</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-10">
+        <h3>Usage</h3>
+
+        <p><a href="{% url 'datasets:submit' %}">Submit</a> ->
+            <a href="{% url 'datasets:process'%}">Process</a> ->
+            See <a href="{% url 'datasets:report'%}">Report</a>
+        </p>
+
+        <h3>Screencast</h3>
+
+        <img src="https://pilosus.org/pics/django-primes-interview.gif"
+                class="img-responsive" alt="Solution Screencast" title="Solution Screencast">
+
+        <h3>Testing Environment</h3>
+
+        <p>Under Django project's directory (where <code>manage.py</code> is located) do the following:</p>
+        <p>1. Create a file with environment variables, e.g. <code>.env</code>, for project's settings:</p>
+
+        <pre>
+# Django
+DJANGO_SECRET_KEY=YourSuperSecretString
+
+# DB
+DATABASE_NAME=dbname
+DATABASE_USER=dbuser
+DATABASE_PASSWORD=dbpasswd
+DATABASE_HOST=127.0.0.1
+DATABASE_PORT=5432
+
+# Celery
+CELERY_BROKER_URL=amqp://guest@localhost//
+CELERY_RESULT_BACKEND=rpc
+CELERY_QUEUE_FIRST=first
+CELERY_QUEUE_SECOND=second
+CELERY_QUEUE_THIRD=third
+
+# Flower
+FLOWER_BASIC_AUTH=foo:bar
+FLOWER_PORT=5555
+            </pre>
+
+        <p>2. Install <code>requirements.txt</code> (globally, or better off in the <code>virtualenv</code>):</p>
+
+        <pre>
+$ pip install -r ../requirements.txt
+        </pre>
+
+        <p>3. Before executing each of the following steps (in separate shells), export above mentioned variables
+        and activate <code>virtualenv</code> if needed:</p>
+        <pre>
+$ set -a
+$ source .env
+$ set +a
+
+$ source .venv/bin/activate
+        </pre>
+
+        <p>4. Run three Celery workers:</p>
+
+        <pre>
+$ celery -A primes worker -Q first -l info --hostname=first-server@%h
+$ celery -A primes worker -Q second -l info --hostname=second-server@%h
+$ celery -A primes worker -Q third -l info --hostname=third-server@%h
+        </pre>
+
+        <p>5. Run Flower:</p>
+
+        <pre>
+$ flower -A primes --port=5555
+        </pre>
+
+        <p>6. Run Django server:</p>
+
+        <pre>
+$ python manage.py runserver
+        </pre>
+
+        <p>7. Go to <a href="http://127.0.0.1:8000/">http://127.0.0.1:8000/</a>. Now you are done!</p>
+
+    </div>
+    <div class="col-md-2">
+        <h3>Links</h3>
+
+        <p><a href="https://github.com/pilosus/django-primes-interview">
+            <span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Github Repo</a></p>
+
+    </div>
+</div>
+{% endblock %}

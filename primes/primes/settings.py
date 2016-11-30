@@ -154,3 +154,7 @@ CELERY_TASK_ROUTES = {
         re.compile(r'.*third_.*'):
             {'queue': os.environ.get('CELERY_QUEUE_THIRD', '')},
 }
+
+# Flower
+FLOWER_BASIC_AUTH = os.environ.get('FLOWER_BASIC_AUTH', '')
+FLOWER_PORT = os.environ.get('FLOWER_PORT', '5555')
