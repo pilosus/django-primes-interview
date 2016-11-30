@@ -95,6 +95,21 @@ $ python manage.py runserver
 
         <p>7. Go to <a href="http://127.0.0.1:8000/">http://127.0.0.1:8000/</a>. Now you are done!</p>
 
+        <h3>Testing</h3>
+
+        <p>The app covered with functional tests (using <code>Selenium</code>), as well as with unit-tests.</p>
+
+        <pre>
+# Unit-tests
+# NB! Install dependencies with pip install -r requirements/testing.txt beforehand!
+$ ./run-tests-with-coverage.sh datasets
+
+# Functional test
+# NB! Tests get use of TransactionTestCase, so the tests will use your DB by default
+# Also, see discussion in functional_tests/tests.py as for why we don't use LiveServerTestCase
+$ python manage.py test functional_tests
+        </pre>
+
     </div>
     <div class="col-md-2">
         <h3>Links</h3>

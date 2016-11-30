@@ -1,0 +1,12 @@
+[run]
+omit =
+    # omit anything in a migrations directory anywhere
+    */migrations/*
+
+    # omit everything in functional_tests
+    functional_tests/*
+
+    # omit these single files
+    */wsgi.py
+    */manage.py
+    datasets/apps.py
