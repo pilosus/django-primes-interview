@@ -3,15 +3,15 @@ import json
 import datetime
 
 
-from django.core.urlresolvers import resolve
 from django.test import TestCase
-from django.http import HttpRequest
 from django.conf import settings
 from django.utils import timezone
 from django.urls import reverse
-from django.template.loader import render_to_string
-from datasets.views import index, submit, process, report
-from datasets.models import Processing, Dataset
+from .models import Processing, Dataset
+from .handlers import handle_uploaded_file
+from .templatetags.datasets_extras import settings_value, replace_flower_port
+from .tasks import first_select_json_from_dataset, second_test_function, third_save_json_to_db
+from .exceptions import DatasetInputError
 
 
 class ProcessingAndDatasetModelsTest(TestCase):
@@ -199,6 +199,21 @@ class ProcessPageTest(TestCase):
         response = self.client.get(reverse("datasets:process"))
         self.assertEqual(response.context['page_alias'], 'process')
 
+    def test_proces_page_pagination_out_of_range(self):
+        data = [{"b": 1, "a": 3}]
+
+        # we have 25 items per page
+        for i in range(30):
+            dataset = Dataset.objects.create()
+            dataset.name = "{0}.json".format(i)
+            dataset.data = data
+            dataset.save()
+
+        # access the page that is out of range
+        response = self.client.get(reverse("datasets:process"), data={'page': 1000})
+
+        self.assertEqual(len(response.context['datasets']), 5)
+
 
 class ReportPageTest(TestCase):
     """
@@ -233,3 +248,187 @@ class ReportPageTest(TestCase):
         response = self.client.get(reverse("datasets:report"), data={'page': 2})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['datasets']), 5)
+
+    def test_report_page_pagination_out_of_range(self):
+        processing = Processing.objects.create()
+        data = [{"b": 1, "a": 3}]
+
+        # we have 25 items per page
+        for i in range(30):
+            dataset = Dataset.objects.create()
+            dataset.processing = processing
+            dataset.name = "{0}.json".format(i)
+            dataset.data = data
+            dataset.save()
+
+        # access the page that is out of range
+        response = self.client.get(reverse("datasets:report"), data={'page': 1000})
+        self.assertEqual(len(response.context['datasets']), 5)
+
+
+class HandlersTest(TestCase):
+    """
+    Tests for handlers.
+    """
+    def test_upload_file_handler(self):
+        result = handle_uploaded_file(1, 1)
+        self.assertTrue(result.startswith('uploads/'))
+        self.assertTrue(result.endswith('.json'))
+        self.assertIn(str(timezone.now().year), result)
+        self.assertIn(str(timezone.now().month), result)
+        self.assertIn(str(timezone.now().day), result)
+
+
+class TemplateTagsTest(TestCase):
+    """
+    Tests for custom template filters, tags, etc.
+    """
+
+    def test_setting_value_filter(self):
+        self.assertEqual(settings.MEDIA_ROOT,
+                         settings_value('MEDIA_ROOT'))
+
+    def test_replace_flower_port_tag(self):
+        address1 = 'https://127.0.0.1:8000/'
+        address2 = 'https://127.0.0.1/'
+
+        self.assertEqual(replace_flower_port(address1),
+                         'https://127.0.0.1:{0}/'.format(settings.FLOWER_PORT))
+        self.assertEqual(replace_flower_port(address2),
+                         'https://127.0.0.1:{0}/'.format(settings.FLOWER_PORT))
+
+
+class TasksTest(TestCase):
+    """
+    Tests for Celery tasks.
+    """
+    def test_first_select_json_from_dataset(self):
+        processing = Processing.objects.create()
+        dataset = Dataset.objects.create()
+
+        processing.exceptions = False
+        processing.save()
+
+        # directory where all dataset files for testing stored
+        test_files_dir = os.path.join(settings.MEDIA_ROOT, 'tests')
+        first_legal_file = os.path.join(test_files_dir, 'dataset1.json')
+
+        # read first JSON data
+        with open(first_legal_file) as data_file:
+            data = json.load(data_file)
+
+        dataset.name = 'my_file.json'
+        dataset.data = data
+        dataset.result = {'result': 0}
+        dataset.save()
+
+        dataset_pk, processing_pk = first_select_json_from_dataset((dataset.pk, processing.pk))
+
+        selected_dataset = Dataset.objects.get(pk=dataset_pk)
+        selected_processing = Processing.objects.get(pk=processing_pk)
+
+        self.assertEqual(selected_dataset.pk, dataset.pk)
+        self.assertEqual(selected_processing.pk, processing.pk)
+
+    def test_first_function_with_exception(self):
+        processing = Processing.objects.create()
+        dataset = Dataset.objects.create()
+
+        processing.exceptions = False
+        processing.save()
+
+        # directory where all dataset files for testing stored
+        test_files_dir = os.path.join(settings.MEDIA_ROOT, 'tests')
+        first_legal_file = os.path.join(test_files_dir, 'dataset1.json')
+
+        # read first JSON data
+        with open(first_legal_file) as data_file:
+            data = json.load(data_file)
+
+        dataset.name = 'my_file.json'
+        dataset.data = data
+        dataset.exception = 'Unknown Exception'
+        dataset.save()
+
+        # see: http://stackoverflow.com/a/3166985/4241180
+        with self.assertRaises(DatasetInputError) as context:
+            dataset_pk, processing_pk = first_select_json_from_dataset((dataset.pk, processing.pk))
+
+        self.assertIn('Submitted dataset has got an exception', str(context.exception))
+
+    def test_second_function_with_legal_input(self):
+        processing = Processing.objects.create()
+        dataset = Dataset.objects.create()
+
+        processing.exceptions = False
+        processing.save()
+
+        # directory where all dataset files for testing stored
+        test_files_dir = os.path.join(settings.MEDIA_ROOT, 'tests')
+        first_legal_file = os.path.join(test_files_dir, 'dataset1.json')
+
+        # read first JSON data
+        with open(first_legal_file) as data_file:
+            data = json.load(data_file)
+
+        dataset.name = 'my_file.json'
+        dataset.data = data
+        dataset.save()
+
+        # what we expect
+        expected_result = [{'result': pair['a'] + pair['b']} for pair in data]
+
+        dataset_pk, actual_result = second_test_function((dataset.pk, processing.pk))
+
+        self.assertEqual(expected_result, actual_result)
+
+    def test_second_function_with_illegal_input(self):
+        processing = Processing.objects.create()
+        dataset = Dataset.objects.create()
+
+        processing.exceptions = False
+        processing.save()
+
+        # directory where all dataset files for testing stored
+        test_files_dir = os.path.join(settings.MEDIA_ROOT, 'tests')
+        fourth_illegal_file = os.path.join(test_files_dir, 'dataset4falsy.json')
+
+        # read first JSON data
+        with open(fourth_illegal_file) as data_file:
+            data = json.load(data_file)
+
+        dataset.name = 'dataset4falsy.json'
+        dataset.data = data
+        dataset.save()
+
+        dataset_pk, actual_result = second_test_function((dataset.pk, processing.pk))
+
+        fetched_dataset = Dataset.objects.get(pk=dataset_pk)
+        self.assertIsNotNone(fetched_dataset.exception)
+
+    def test_third_function(self):
+        processing = Processing.objects.create()
+        dataset = Dataset.objects.create()
+
+        processing.exceptions = False
+        processing.save()
+
+        # directory where all dataset files for testing stored
+        test_files_dir = os.path.join(settings.MEDIA_ROOT, 'tests')
+        first_legal_file = os.path.join(test_files_dir, 'dataset1.json')
+
+        # read first JSON data
+        with open(first_legal_file) as data_file:
+            data = json.load(data_file)
+
+        expected_result = [{'result': pair['a'] + pair['b']} for pair in data]
+
+        dataset.name = 'my_file.json'
+        dataset.processing = processing
+        dataset.data = data
+        dataset.save()
+
+        status = third_save_json_to_db((dataset.pk, expected_result))
+
+        fetched_dataset = Dataset.objects.get(pk=dataset.pk)
+        self.assertEqual(expected_result, fetched_dataset.result)

@@ -20,9 +20,3 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 # Load task modules from all registered Django app configs.
 # Celery will be looking for `tasks.py` file in apps' directories.
 app.autodiscover_tasks()
-
-
-# Dump its own request information
-@app.task(bind=True)
-def debug_task(self):
-    print('Request: {0!r}'.format(self.request))
