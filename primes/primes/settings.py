@@ -25,9 +25,11 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'mh@bxilm%)0&6q3sc9&2%sj$_a6-yz
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Whatever non-empty value in DJANGO_DEBUG will make it True, even 'False'!
+DEBUG = bool(os.environ.get('DJANGO_DEBUG', False))
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['138.201.93.57', '127.0.0.1']
+
 
 
 # Application definition
@@ -136,6 +138,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Static files
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 # Uploads
 # http://stackoverflow.com/a/34430349/4241180
