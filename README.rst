@@ -19,7 +19,7 @@ Develop an app for testing input datasets of the following format::
    },
  ]
 
-The app consumes datasets, then calculates results by adding up ``a``s and ``b``s::
+The app consumes datasets, then calculates results by adding up ``a`` and ``b``::
 
  [
    {
