@@ -19,7 +19,7 @@ Develop an app for testing input datasets of the following format::
    },
  ]
 
-The app consumes datasets, then calculates results by adding up `a`s and `b`s::
+The app consumes datasets, then calculates results by adding up ``a``s and ``b``s::
 
  [
    {
@@ -63,11 +63,11 @@ Requirements
 ------------
 
 - App should be written in Python using Django framework
-- Dependencies are installed using `requirements.txt` and `pip`
-- DB queries handled by `Django ORM` with `PostgreSQL 9.4` as a backend
-- Asynchronous tasks handled by `Celery` with `RabbitMQ` as a backend
-- Tasks monitoring done with `Celery Flower`
-- The App must be deployed on `Ubuntu 14.04 LTS` VPS instance (webservers, application server, daemons, etc. are up to developer)
+- Dependencies are installed using ``requirements.txt`` and ``pip``
+- DB queries handled by ``Django ORM`` with ``PostgreSQL 9.4`` as a backend
+- Asynchronous tasks handled by ``Celery`` with ``RabbitMQ`` as a backend
+- Tasks monitoring done with ``Celery Flower``
+- The App must be deployed on ``Ubuntu 14.04 LTS`` VPS instance (webservers, application server, daemons, etc. are up to developer)
 
 
 Usage
@@ -85,9 +85,9 @@ Screencast
 Up & Running Locally
 ====================
 
-Under Django project's directory (where `manage.py` is located) do the following:
+Under Django project's directory (where ``manage.py`` is located) do the following:
 
-1. Create a file with environment variables, e.g. `.env`, for project's settings::
+1. Create a file with environment variables, e.g. ``.env``, for project's settings::
 
 
     # Django
@@ -111,7 +111,7 @@ Under Django project's directory (where `manage.py` is located) do the following
     FLOWER_BASIC_AUTH=foo:bar
     FLOWER_PORT=5555
 
-2. Install `requirements` (globally, or better off in the `virtualenv`)::
+2. Install ``requirements`` (globally, or better off in the ``virtualenv``)::
 
     # choose either of the following depending on your environment
 
@@ -122,7 +122,7 @@ Under Django project's directory (where `manage.py` is located) do the following
     $ pip install -r ../requirements/testing.txt
 
 3. Before executing each of the following steps (in separate shells), export above mentioned variables
-   and activate `virtualenv` if needed::
+   and activate ``virtualenv`` if needed::
 
     $ set -a
     $ source .env
@@ -131,19 +131,19 @@ Under Django project's directory (where `manage.py` is located) do the following
     $ source .venv/bin/activate
 
 
-4. Run three `Celery` workers::
+4. Run three ``Celery`` workers::
 
     $ celery -A primes worker -Q first -l info --hostname=first-server@%h
     $ celery -A primes worker -Q second -l info --hostname=second-server@%h
     $ celery -A primes worker -Q third -l info --hostname=third-server@%h
 
 
-5. Run `Flower`::
+5. Run ``Flower``::
 
     $ flower -A primes --port=5555
 
 
-6. Run `Django` server::
+6. Run ``Django`` server::
 
     $ python manage.py runserver
 
@@ -153,7 +153,7 @@ Under Django project's directory (where `manage.py` is located) do the following
 Testing
 =======
 
-The app covered with functional tests (using `Selenium`), as well as with unit-tests (100% coverage). Run tests this way::
+The app covered with functional tests (using ``Selenium``), as well as with unit-tests (100% coverage). Run tests this way::
 
     # Unit-tests without coverage
     $ python manage.py test datasets
@@ -168,7 +168,7 @@ The app covered with functional tests (using `Selenium`), as well as with unit-t
     $ python manage.py test functional_tests
 
 
-Lincense
+License
 ========
 
 See `LICENSE` file.
