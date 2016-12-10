@@ -1,3 +1,75 @@
+Problem
+=======
+
+Develop an app for testing input datasets of the following format::
+
+ [
+   {
+     "a": 1,
+     "b": 2,
+   },
+   {
+     "a": 3,
+     "b": 5,
+   },
+   ...
+   {
+     "a": prime number,
+     "b": prime number,
+   },
+ ]
+
+The app consumes datasets, then calculates results by adding up `a`s and `b`s::
+
+ [
+   {
+     "result": 3,
+   },
+   {
+     "result": 8,
+   },
+   ...
+   {
+     "result": a's prime + b's prime,
+   },
+ ]
+
+Features
+--------
+
+- take in input JSON via user interface
+- save input to the DB
+- process all uploaded datasets on a button click
+- save results to the DB
+- save all exceptions raised to the DB
+- show the results of the last processing
+- show the status of the last processing: True if exceptions were raised, False otheriwse
+- show the list of exceptions raised
+
+Implementation
+--------------
+
+1. Each datasets submissions invokes a chain of 3 tasks:
+
+  - DB querying, JSON request
+  - Processing JSON data, JSON response
+  - Saving JSON to the DB
+
+2. Each chain's task handled by a separate worker
+3. App must be developed in a git-repository.
+
+
+Requirements
+------------
+
+- App should be written in Python using Django framework
+- Dependencies are installed using `requirements.txt` and `pip`
+- DB queries handled by `Django ORM` with `PostgreSQL 9.4` as a backend
+- Asynchronous tasks handled by `Celery` with `RabbitMQ` as a backend
+- Tasks monitoring done with `Celery Flower`
+- The App must be deployed on `Ubuntu 14.04 LTS` VPS instance (webservers, application server, daemons, etc. are up to developer)
+
+
 Usage
 =====
 
